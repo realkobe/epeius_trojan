@@ -1,5 +1,6 @@
 // worker.src.js
 import { connect } from "cloudflare:sockets";
+let realkobeNum = 99;
 let password = 'auto';
 let proxyIP = '';
 // The user name and password do not contain special characters
@@ -824,7 +825,7 @@ function subAddresses(host,pw,userAgent,newAddressesapi,newAddressescsv) {
 
 		const 啥啥啥_写的这是啥啊 = 'dHJvamFu';
 		const 协议类型 = atob(啥啥啥_写的这是啥啊);
-		const trojanLink = `${协议类型}://${密码}@${address}:${port}?security=tls&sni=${伪装域名}&fp=randomized&type=ws&host=${伪装域名}&path=${encodeURIComponent(最终路径)}#${encodeURIComponent(addressid + 节点备注)}`;
+		const trojanLink = `${协议类型}://${密码}@${address}:${port}?security=tls&sni=${伪装域名}&fp=randomized&type=ws&host=${伪装域名}&path=${encodeURIComponent(最终路径)}#${encodeURIComponent(addressid + 节点备注)}`+ ++realkobeNum;
 
 		return trojanLink;
 	}).join('\n');
@@ -888,7 +889,7 @@ async function getAddressescsv(tls) {
 	}
 	
 	let newAddressescsv = [];
-	
+	realkobeNum = 99;
 	for (const csvUrl of addressescsv) {
 		try {
 			const response = await fetch(csvUrl);
