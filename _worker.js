@@ -1,6 +1,6 @@
 // worker.src.js
 import { connect } from "cloudflare:sockets";
-let realkobeNum = 99;
+let realkobeNum = 100;
 let password = 'auto';
 let proxyIP = '';
 // The user name and password do not contain special characters
