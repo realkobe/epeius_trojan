@@ -1,7 +1,9 @@
 // _worker.js
 import { connect } from "cloudflare:sockets";
 let password = 'auto';
-let proxyIP = '';//'146.70.175.102';
+//let proxyIP = '';//'146.70.175.102';
+const proxyIPs = ["proxy.xxxxxxxx.tk"]; //ts.hpc.tw edgetunnel.anycast.eu.org bestproxy.onecf.eu.org cdn-all.xn--b6gac.eu.org cdn.xn--b6gac.eu.org proxy.xxxxxxxx.tk
+let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 // The user name and password do not contain special characters
 // Setting the address will ignore proxyIP
 // Example:  user:pass@host:port  or  host:port
