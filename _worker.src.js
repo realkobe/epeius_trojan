@@ -9,15 +9,15 @@ let socks5Address = '';
 
 let addresses = [
 	//当sub为空时启用本地优选域名/优选IP，若不带端口号 TLS默认端口为443，#号后为备注别名
-	'cf.090227.xyz:443#加入我的频道t.me/CMLiussss解锁更多优选节点',
-	'time.is#你可以只放域名 如下',
+	'12315.cf.090227.xyz:443#加入我的频道t.me/CMLiussss解锁更多优选节点',
+	'visa.cn#你可以只放域名 如下',
 	'www.visa.com.sg',
-	'skk.moe#也可以放域名带端口 如下',
+	'time.is#也可以放域名带端口 如下',
 	'www.wto.org:8443',
-	'www.csgo.com:2087#节点名放在井号之后即可',
+	'chatgpt.com:2087#节点名放在井号之后即可',
 	'icook.hk#若不带端口号默认端口为443',
 	'104.17.152.41#IP也可以',
-	'[2606:4700:e7:25:4b9:f8f8:9bfb:774a]#IPv6也OK',
+	'[2606:4700:e7:25:4b9:f8f8:9bfb:774a]#IPv6也OK'
 ];
 
 let sub = ''; 
@@ -39,6 +39,10 @@ let proxyhostsURL = 'https://raw.githubusercontent.com/cmliu/CFcdnVmess2sub/main
 let fakeUserID ;
 let fakeHostName ;
 let proxyIPs ;
+let socks5s;
+let go2Socks5s = [
+	'*ttvnw.net',
+];
 let sha224Password ;
 const expire = 4102329600;//2099-12-31
 const regex = /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|\[.*\]):?(\d+)?#?(.*)?$/;
@@ -57,10 +61,35 @@ export default {
 		try {
 			const UA = request.headers.get('User-Agent') || 'null';
 			const userAgent = UA.toLowerCase();
+			password = env.PASSWORD || password;
+			sha224Password = env.SHA224 || env.SHA224PASS || sha256.sha224(password);
+			//console.log(sha224Password);
+
+			const currentDate = new Date();
+			currentDate.setHours(0, 0, 0, 0); // 设置时间为当天
+			const timestamp = Math.ceil(currentDate.getTime() / 1000);
+			const fakeUserIDMD5 = await MD5MD5(`${password}${timestamp}`);
+			fakeUserID = fakeUserIDMD5.slice(0, 8) + "-" + fakeUserIDMD5.slice(8, 12) + "-" + fakeUserIDMD5.slice(12, 16) + "-" + fakeUserIDMD5.slice(16, 20) + "-" + fakeUserIDMD5.slice(20);
+			fakeHostName = fakeUserIDMD5.slice(6, 9) + "." + fakeUserIDMD5.slice(13, 19);
+			//console.log(fakeUserID); // 打印fakeID
+			
 			proxyIP = env.PROXYIP || proxyIP;
 			proxyIPs = await ADD(proxyIP);
 			proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 			socks5Address = env.SOCKS5 || socks5Address;
+			socks5s = await ADD(socks5Address);
+			socks5Address = socks5s[Math.floor(Math.random() * socks5s.length)];
+			socks5Address = socks5Address.split('//')[1] || socks5Address;
+
+			sub = env.SUB || sub;
+			subconverter = env.SUBAPI || subconverter;
+			if( subconverter.includes("http://") ){
+				subconverter = subconverter.split("//")[1];
+				subProtocol = 'http';
+			} else {
+				subconverter = subconverter.split("//")[1] || subconverter;
+			}
+			subconfig = env.SUBCONFIG || subconfig;
 			if (socks5Address) {
 				try {
 					parsedSocks5Address = socks5AddressParser(socks5Address);
@@ -76,39 +105,17 @@ export default {
 			} else {
 				RproxyIP = env.RPROXYIP || !proxyIP ? 'true' : 'false';
 			}
-			password = env.PASSWORD || password;
-			sha224Password = env.SHA224 || env.SHA224PASS || sha256.sha224(password);
-			//console.log(sha224Password);
-
-			const url = new URL(request.url);
-			const upgradeHeader = request.headers.get("Upgrade");
 			if (env.ADD) addresses = await ADD(env.ADD);
 			if (env.ADDAPI) addressesapi = await ADD(env.ADDAPI);
 			if (env.ADDCSV) addressescsv = await ADD(env.ADDCSV);
 			DLS = env.DLS || DLS;
 			BotToken = env.TGTOKEN || BotToken;
 			ChatID = env.TGID || ChatID; 
-			sub = env.SUB || sub;
+			if(env.GO2SOCKS5) go2Socks5s = await ADD(env.GO2SOCKS5);
+			const upgradeHeader = request.headers.get("Upgrade");
+			const url = new URL(request.url);
 			if (url.searchParams.has('sub') && url.searchParams.get('sub') !== '') sub = url.searchParams.get('sub');
-			subconverter = env.SUBAPI || subconverter;
-			if( subconverter.includes("http://") ){
-				subconverter = subconverter.split("//")[1];
-				subProtocol = 'http';
-			} else {
-				subconverter = subconverter.split("//")[1] || subconverter;
-			}
-			subconfig = env.SUBCONFIG || subconfig;
 			FileName = env.SUBNAME || FileName;
-			RproxyIP = env.RPROXYIP || !proxyIP ? 'true' : 'false';
-
-			const currentDate = new Date();
-			currentDate.setHours(0, 0, 0, 0); // 设置时间为当天
-			const timestamp = Math.ceil(currentDate.getTime() / 1000);
-			const fakeUserIDMD5 = await MD5MD5(`${password}${timestamp}`);
-			fakeUserID = fakeUserIDMD5.slice(0, 8) + "-" + fakeUserIDMD5.slice(8, 12) + "-" + fakeUserIDMD5.slice(12, 16) + "-" + fakeUserIDMD5.slice(16, 20) + "-" + fakeUserIDMD5.slice(20);
-			fakeHostName = fakeUserIDMD5.slice(6, 9) + "." + fakeUserIDMD5.slice(13, 19);
-			//console.log(fakeUserID); // 打印fakeID
-
 			if (!upgradeHeader || upgradeHeader !== "websocket") {
 				//const url = new URL(request.url);
 				switch (url.pathname) {
@@ -368,6 +375,14 @@ async function parseTrojanHeader(buffer) {
 }
 
 async function handleTCPOutBound(remoteSocket, addressRemote, portRemote, rawClientData, webSocket, log, addressType) {
+	async function useSocks5Pattern(address) {
+		if ( go2Socks5s.includes(atob('YWxsIGlu')) || go2Socks5s.includes(atob('Kg==')) ) return true;
+		return go2Socks5s.some(pattern => {
+			let regexPattern = pattern.replace(/\*/g, '.*');
+			let regex = new RegExp(`^${regexPattern}$`, 'i');
+			return regex.test(address);
+		});
+	}
 	async function connectAndWrite(address, port, socks = false) {
 		log(`connected to ${address}:${port}`);
 		//if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address)) address = `${atob('d3d3Lg==')}${address}${atob('LmlwLjA5MDIyNy54eXo=')}`;
@@ -398,7 +413,9 @@ async function handleTCPOutBound(remoteSocket, addressRemote, portRemote, rawCli
 		});
 		remoteSocketToWS(tcpSocket2, webSocket, null, log);
 	}
-	const tcpSocket = await connectAndWrite(addressRemote, portRemote);
+	let useSocks = false;
+	if( go2Socks5s.length > 0 && enableSocks ) useSocks = await useSocks5Pattern(addressRemote);
+	let tcpSocket = await connectAndWrite(addressRemote, portRemote, useSocks);
 	remoteSocketToWS(tcpSocket, webSocket, retry, log);
 }
 
@@ -560,7 +577,7 @@ function 配置信息(密码, 域名地址) {
 	const 啥啥啥_写的这是啥啊 = 'dHJvamFu';
 	const 协议类型 = atob(啥啥啥_写的这是啥啊);
 	
-	const 别名 = 域名地址;
+	const 别名 = FileName;
 	let 地址 = 域名地址;
 	let 端口 = 443;
 	
@@ -572,9 +589,9 @@ function 配置信息(密码, 域名地址) {
 	const SNI = 域名地址;
 	const 指纹 = 'randomized';
 	
-	const v2ray = `${协议类型}://${encodeURIComponent(密码)}@${地址}:${端口}?security=${传输层安全[0]}&sni=${SNI}&fp=${指纹}&type=${传输层协议}&host=${伪装域名}&path=${encodeURIComponent(路径)}#${encodeURIComponent(别名)}`
-	const clash = `- {name: ${别名}, server: ${地址}, port: ${端口}, udp: false, client-fingerprint: ${指纹}, type: ${协议类型}, password: ${密码}, sni: ${SNI}, skip-cert-verify: true, network: ${传输层协议}, ws-opts: {path: ${路径}, headers: {Host: ${伪装域名}}}}`;
-	
+	const v2ray = `${协议类型}://${encodeURIComponent(密码)}@${地址}:${端口}?security=${传输层安全[0]}&sni=${SNI}&alpn=h3&fp=${指纹}&allowInsecure=1&type=${传输层协议}&host=${伪装域名}&path=${encodeURIComponent(路径)}#${encodeURIComponent(别名)}`              
+	const clash = `- {name: ${别名}, server: ${地址}, port: ${端口}, udp: false, client-fingerprint: ${指纹}, type: ${协议类型}, password: ${密码}, sni: ${SNI}, alpn: [h3], skip-cert-verify: true, network: ${传输层协议}, ws-opts: {path: "${路径}", headers: {Host: ${伪装域名}}}}`;
+
 	return [v2ray,clash];
 }
 
@@ -611,21 +628,39 @@ async function getTrojanConfig(password, hostName, sub, UA, RproxyIP, _url) {
 	if ( userAgent.includes('mozilla') && !subParams.some(_searchParams => _url.searchParams.has(_searchParams))) {
 		let surge = `Surge订阅地址:\nhttps://${proxyhost}${hostName}/${password}?surge`;
 		if (hostName.includes(".workers.dev") || hostName.includes(".pages.dev")) surge = "Surge订阅必须绑定自定义域";
-		
-		let 订阅器 = `您的订阅内容由 ${sub} 提供维护支持, 自动获取ProxyIP: ${RproxyIP}`;
-		if (!sub || sub == '') {
-			if (!proxyIP || proxyIP =='') {
-				订阅器 = '您的订阅内容由 内置 addresses/ADD 参数提供, 当前使用的ProxyIP为空, 推荐您设置 proxyIP/PROXYIP ！！！';
-			} else {
-				订阅器 = `您的订阅内容由 内置 addresses/ADD 参数提供, 当前使用的ProxyIP: ${proxyIPs.join(', ')}`;
-			}
-		} else if (RproxyIP != 'true'){
-			if (enableSocks) 订阅器 += `, 当前使用的Socks5: ${parsedSocks5Address.hostname}:${String(parsedSocks5Address.port)}`;
-			else 订阅器 += `, 当前使用的ProxyIP: ${proxyIPs.join(', ')}`;
+		const newSocks5s = socks5s.map(socks5Address => {
+			if (socks5Address.includes('@')) return socks5Address.split('@')[1];
+			else if (socks5Address.includes('//')) return socks5Address.split('//')[1];
+			else return socks5Address;
+		});
+
+		let socks5List = '';
+		if( go2Socks5s.length > 0 && enableSocks ) {
+			socks5List = `${decodeURIComponent('SOCKS5%EF%BC%88%E7%99%BD%E5%90%8D%E5%8D%95%EF%BC%89%3A%20')}`;
+			if ( go2Socks5s.includes(atob('YWxsIGlu')) || go2Socks5s.includes(atob('Kg==')) ) socks5List += `${decodeURIComponent('%E6%89%80%E6%9C%89%E6%B5%81%E9%87%8F')}\n`;
+			else socks5List += `\n  ${go2Socks5s.join('\n  ')}\n`;
 		}
+
+		let 订阅器 = '';
+		if (!sub || sub == '') {
+			if (enableSocks) 订阅器 += `CFCDN（访问方式）: Socks5\n  ${newSocks5s.join('\n  ')}\n${socks5List}`;
+			else if (proxyIP && proxyIP != '') 订阅器 += `CFCDN（访问方式）: ProxyIP\n  ${proxyIPs.join('\n  ')}\n`;
+			else 订阅器 += `CFCDN（访问方式）: 无法访问, 需要您设置 proxyIP/PROXYIP ！！！\n`;
+			订阅器 += `\n您的订阅内容由 内置 addresses/ADD* 参数变量提供\n`;
+			if (addresses.length > 0) 订阅器 += `ADD（TLS优选域名&IP）: \n  ${addresses.join('\n  ')}\n`;
+			if (addressesapi.length > 0) 订阅器 += `ADDAPI（TLS优选域名&IP 的 API）: \n  ${addressesapi.join('\n  ')}\n`;
+			if (addressescsv.length > 0) 订阅器 += `ADDCSV（IPTest测速csv文件 限速 ${DLS} ）: \n  ${addressescsv.join('\n  ')}\n`;
+		} else {
+			if (enableSocks) 订阅器 += `CFCDN（访问方式）: Socks5\n  ${newSocks5s.join('\n  ')}\n${socks5List}`;
+			else if (proxyIP && proxyIP != '') 订阅器 += `CFCDN（访问方式）: ProxyIP\n  ${proxyIPs.join('\n  ')}\n`;
+			else if (RproxyIP == 'true') 订阅器 += `CFCDN（访问方式）: 自动获取ProxyIP\n`;
+			else 订阅器 += `CFCDN（访问方式）: 无法访问, 需要您设置 proxyIP/PROXYIP ！！！\n`
+			订阅器 += `\nSUB（优选订阅生成器）: ${sub}`;
+		}
+
 		return `
 ################################################################
-Subscribe / sub 订阅地址, 支持 Base64、clash-meta、sing-box 订阅格式, ${订阅器}
+Subscribe / sub 订阅地址, 支持 Base64、clash-meta、sing-box 订阅格式
 ---------------------------------------------------------------
 快速自适应订阅地址:
 https://${proxyhost}${hostName}/${password}
@@ -643,6 +678,19 @@ https://${proxyhost}${hostName}/${password}?sb
 https://${proxyhost}${hostName}/${password}?singbox
 
 ${surge}
+---------------------------------------------------------------
+################################################################
+${FileName} 配置信息
+---------------------------------------------------------------
+HOST: ${hostName}
+PASSWORD: ${password}
+SHA224: ${sha224Password}
+FAKEPASS: ${fakeUserID}
+UA: ${UA}
+
+${订阅器}
+SUBAPI（订阅转换后端）: ${subProtocol}://${subconverter}
+SUBCONFIG（订阅转换配置文件）: ${subconfig}
 ---------------------------------------------------------------
 ################################################################
 v2ray
